@@ -1,0 +1,119 @@
+-- Create Employee Table
+CREATE TABLE emp (
+    id INT PRIMARY KEY,
+    name VARCHAR(20),
+    salary INT,
+    d_id INT,
+    hire_date DATE
+);
+
+-- Insert Employee Data
+INSERT INTO emp (id, name, salary, d_id, hire_date) VALUES
+(1, 'sanket',   50000, 101, '2026-01-15'),
+(2, 'shubham',  56000, 102, '2026-03-10'),
+(3, 'rushi',    52000, 103, '2026-04-20'),
+(4, 'sanket',   45000, 101, '2025-10-05'),
+(5, 'shailesh', 50000, 103, '2026-06-01');
+
+-- Create Department Table
+CREATE TABLE dept (
+    d_id INT PRIMARY KEY,
+    d_name VARCHAR(20)
+);
+
+-- Insert Department Data
+INSERT INTO dept (d_id, d_name) VALUES
+(101, 'HR'),
+(102, 'IT'),
+(103, 'Finance');
+
+-- Verify Data
+SELECT * FROM emp;
+SELECT * FROM dept;
+
+-- 1. Top 5 highest salary employees
+SELECT *
+FROM emp
+ORDER BY salary DESC
+LIMIT 5;
+
+-- 2. Department wise employee count
+SELECT d.d_name,
+       COUNT(e.id) AS employee_count
+FROM dept d
+LEFT JOIN emp e
+ON d.d_id = e.d_id
+GROUP BY d.d_name;
+
+-- 3. Find Second highest salary
+SELECT MAX(salary) AS second_highest_salary
+FROM emp
+WHERE salary < (SELECT MAX(salary) FROM emp);
+
+-- 4. Employees whose salary > department average salary
+SELECT *
+FROM emp e
+WHERE salary >
+(
+    SELECT AVG(salary)
+    FROM emp
+    WHERE d_id = e.d_id
+);
+
+-- 5. Inner Join
+SELECT e.id,
+       e.name,
+       e.salary,
+       d.d_name
+FROM emp e
+INNER JOIN dept d
+ON e.d_id = d.d_id;
+
+-- 6. Left Join
+SELECT e.id,
+       e.name,
+       e.salary,
+       d.d_name
+FROM emp e
+LEFT JOIN dept d
+ON e.d_id = d.d_id;
+
+-- 7. Group By with Having
+SELECT d_id,
+       COUNT(*) AS total_employees
+FROM emp
+GROUP BY d_id
+HAVING COUNT(*) > 1;
+
+-- 8. Employees hired in last 6 months
+SELECT *
+FROM emp
+WHERE hire_date >= CURRENT_DATE - INTERVAL '6 months';
+
+-- 9. Find duplicate records
+SELECT name,
+       COUNT(*) AS cnt
+FROM emp
+GROUP BY name
+HAVING COUNT(*) > 1;
+
+-- 10. Remove duplicate records
+WITH cte AS
+(
+    SELECT *,
+           ROW_NUMBER() OVER
+           (
+               PARTITION BY name
+               ORDER BY id
+           ) AS rn
+    FROM emp
+)
+DELETE FROM emp
+WHERE id IN
+(
+    SELECT id
+    FROM cte
+    WHERE rn > 1
+);
+
+select * from emp;
